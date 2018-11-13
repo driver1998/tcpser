@@ -108,7 +108,13 @@ int ser_init_conn(char *tty, int speed)
          O_APPEND and O_NONBLOCK, will work with F_SETFL...) */
       fcntl(fd, F_SETFL, FASYNC);
       
-      tio.c_cflag = CS8 | CLOCAL | CREAD | CRTSCTS;
+      if (0 != tcgetattr(fd, &tio)) {
+        ELOG(LOG_FATAL, "Could not get serial port attributes");
+        return -1;
+      }
+
+      //tio.c_cflag = CS8 | CLOCAL | CREAD | CRTSCTS;
+      tio.c_cflag = CS8 | CLOCAL | CREAD;
       tio.c_iflag = IGNBRK;
       tio.c_oflag = 0;
       tio.c_lflag = 0;
@@ -137,7 +143,8 @@ int ser_set_flow_control(int fd, int status)
     return -1;
   }
   // turn all off.
-  tio.c_cflag &= ~(IXON | IXOFF | CRTSCTS);
+  //tio.c_cflag &= ~(IXON | IXOFF | CRTSCTS);
+  tio.c_cflag &= ~(IXON | IXOFF);
   tio.c_cflag |= status;
   if (0 != tcsetattr(fd, TCSANOW, &tio)) {
     ELOG(LOG_FATAL, "Could not set serial port attributes");

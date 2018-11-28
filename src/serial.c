@@ -16,15 +16,22 @@ int ser_get_bps_const(int speed)
   LOG(LOG_DEBUG, "Checking speed: %d", speed);
 
   switch (speed) {
+  
+#ifdef B921600
   case 921600:
     bps_rate = B921600;
     break;
+#endif
+#ifdef B460800
   case 460800:
     bps_rate = B460800;
     break;
+#endif
+#ifdef B230400
   case 230400:
     bps_rate = B230400;
     break;
+#endif
   case 115200:
     bps_rate = B115200;
     break;
@@ -143,8 +150,7 @@ int ser_set_flow_control(int fd, int status)
     return -1;
   }
   // turn all off.
-  //tio.c_cflag &= ~(IXON | IXOFF | CRTSCTS);
-  tio.c_cflag &= ~(IXON | IXOFF);
+  tio.c_cflag &= ~(IXON | IXOFF | CRTSCTS);
   tio.c_cflag |= status;
   if (0 != tcsetattr(fd, TCSANOW, &tio)) {
     ELOG(LOG_FATAL, "Could not set serial port attributes");
